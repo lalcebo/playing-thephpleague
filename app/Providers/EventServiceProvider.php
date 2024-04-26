@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App\Events\LoginUserEvent;
-use App\Listeners\LoginUserListener;
 use League\Container\ServiceProvider\AbstractServiceProvider;
 use League\Container\ServiceProvider\BootableServiceProviderInterface;
 use League\Event\EventDispatcher;
