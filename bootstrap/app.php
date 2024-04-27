@@ -40,6 +40,13 @@ $consoleHandler = class_exists(NunoMaduro\Collision\Handler::class)
     ->pushHandler(PHP_SAPI === 'cli' ? $consoleHandler : $browserHandler)
     ->register();
 
+// environment vars
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+$environments = $dotenv->load();
+foreach ($environments as $key => $value) {
+    putenv("$key=$value");
+}
+
 // container
 $container = new Container();
 $container->delegate($reflection);
