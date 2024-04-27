@@ -1,14 +1,29 @@
 {
+  "name": "lalcebo/playing-thephpleague",
+  "version": "1.0.0",
+  "description": "Example a micro framework",
+  "keywords": ["php", "thephpleague", "framework"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Jorge Hernandez Lalcebo",
+      "email": "lalcebo2003@gmail.com"
+    }
+  ],
   "require": {
-    "league/route": "^5.1",
+    "php": "^8.2",
     "laminas/laminas-diactoros": "^3.3",
     "laminas/laminas-httphandlerrunner": "^2.10",
-    "league/container": "^4.2",
-    "php": "^8.2",
     "league/config": "^1.2",
-    "league/event": "^3.0"
+    "league/container": "^4.2",
+    "league/event": "^3.0",
+    "league/route": "^5.1"
   },
   "require-dev": {
+    "laravel/pint": "^1.15",
+    "pestphp/pest": "^2.34",
+    "phpstan/phpstan": "^1.10",
+    "rector/rector": "^1.0",
     "roave/security-advisories": "dev-latest"
   },
   "autoload": {
@@ -20,5 +35,31 @@
     "psr-4": {
       "Tests\\": "tests/"
     }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "config": {
+    "sort-packages": true,
+    "preferred-install": "dist",
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
+    "platform": {
+      "php": "8.2"
+    }
+  },
+  "scripts": {
+    "refacto": "rector",
+    "lint": "pint",
+    "test:refacto": "rector --dry-run",
+    "test:lint": "pint --test",
+    "test:types": "phpstan analyse --ansi",
+    "test:unit": "pest --colors=always",
+    "test": [
+      "@test:refacto",
+      "@test:lint",
+      "@test:types",
+      "@test:unit"
+    ]
   }
 }

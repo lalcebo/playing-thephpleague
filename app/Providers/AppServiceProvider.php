@@ -7,7 +7,7 @@ namespace App\Providers;
 use League\Container\ServiceProvider\AbstractServiceProvider;
 use League\Container\ServiceProvider\BootableServiceProviderInterface;
 
-class AppServiceProvider extends AbstractServiceProvider implements BootableServiceProviderInterface
+final class AppServiceProvider extends AbstractServiceProvider implements BootableServiceProviderInterface
 {
     public function provides(string $id): bool
     {

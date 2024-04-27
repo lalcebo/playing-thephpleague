@@ -38,8 +38,8 @@ $container->add(EventDispatcher::class, fn () => $event);
 $container->addServiceProvider(new AppServiceProvider());
 $container->addServiceProvider(new EventServiceProvider());
 
-$strategy = (new ApplicationStrategy)->setContainer($container);
-$router = (new Router)->setStrategy($strategy);
+$strategy = (new ApplicationStrategy())->setContainer($container);
+$router = (new Router())->setStrategy($strategy);
 
 $router->group('', function () use ($router) {
     require __DIR__ . '/routes.php';

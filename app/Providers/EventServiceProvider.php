@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
 use League\Container\ServiceProvider\AbstractServiceProvider;
@@ -7,7 +9,7 @@ use League\Container\ServiceProvider\BootableServiceProviderInterface;
 use League\Event\EventDispatcher;
 use Throwable;
 
-class EventServiceProvider extends AbstractServiceProvider implements BootableServiceProviderInterface
+final class EventServiceProvider extends AbstractServiceProvider implements BootableServiceProviderInterface
 {
     /**
      * The event listener mappings for the application.
@@ -38,7 +40,7 @@ class EventServiceProvider extends AbstractServiceProvider implements BootableSe
 
         foreach ($this->listen as $eventName => $listeners) {
             foreach ($listeners as $listener) {
-                $event->subscribeTo($eventName, new $listener);
+                $event->subscribeTo($eventName, new $listener());
             }
         }
     }

@@ -9,7 +9,7 @@ use League\Event\EventDispatcher;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-class WelcomeController
+final class WelcomeController
 {
     public function __construct(protected EventDispatcher $eventDispatcher)
     {
@@ -18,7 +18,7 @@ class WelcomeController
     public function __invoke(ServerRequestInterface $request): ResponseInterface
     {
         return new JsonResponse([
-            'title'   => 'My New Simple API',
+            'title' => 'My New Simple API',
             'version' => 1,
         ]);
     }
