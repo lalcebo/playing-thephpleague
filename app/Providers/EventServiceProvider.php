@@ -16,7 +16,7 @@ final class EventServiceProvider extends AbstractServiceProvider implements Boot
      *
      * @var array<class-string, array<class-string>>
      */
-    protected array $listen = [
+    private array $listen = [
         //
     ];
 
