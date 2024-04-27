@@ -1,0 +1,44 @@
+name: Integration
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read # This is required for actions/checkout
+
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: [ 8.2 ]
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Use PHP ${{ matrix.php-version }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          tools: composer:v2
+          coverage: xdebug
+      - run: composer validate
+      - run: cp phpunit.xml.dist phpunit.xml
+      - run: phpstan.neon.dist phpstan.neon
+      - run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Rector
+        run: vendor/bin/rector --dry-run
+
+      - name: Lint
+        run: vendor/bin/pint --test
+
+      - name: Types
+        run: vendor/bin/phpstan analyse --ansi
+
+      - name: Unit
+        run: vendor/bin/pest --colors=always --ci --parallel --coverage
