@@ -13,6 +13,7 @@ use League\Container\Container;
 use League\Container\ReflectionContainer;
 use League\Event\EventDispatcher;
 use League\Event\PrioritizedListenerRegistry;
+use League\Route\RouteGroup;
 use League\Route\Router;
 use League\Route\Strategy\ApplicationStrategy;
 use Whoops\Handler\JsonResponseHandler;
@@ -62,8 +63,7 @@ $container->addServiceProvider(new EventServiceProvider());
 $strategy = (new ApplicationStrategy())->setContainer($container);
 $router = (new Router())->setStrategy($strategy);
 
-$router->group('', function () use ($router) {
-    require __DIR__ . '/routes.php';
-});
+$router->group('', fn (RouteGroup $router) => require __DIR__ . '/../routes/web.php');
+$router->group('/api', fn (RouteGroup $router) => require __DIR__ . '/../routes/api.php');
 
 return $router->dispatch($request);

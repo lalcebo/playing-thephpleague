@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-/** @var League\Route\Router $router */
+/** @var League\Route\RouteGroup $router */
 
 use App\Http\Controllers\WelcomeController;
 
