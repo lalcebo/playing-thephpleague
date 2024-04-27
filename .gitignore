@@ -99,3 +99,8 @@ fabric.properties
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
 
+.phpunit.result.cache
+.phpunit.cache
+.php-cs-fixer.cache
+.php-cs-fixer.php
+phpunit.xml
