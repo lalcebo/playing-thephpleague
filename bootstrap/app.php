@@ -33,7 +33,7 @@ $request = ServerRequestFactory::fromGlobals($_SERVER, $_GET, $_POST, $_COOKIE, 
 // whoops
 $browserHandler = $request->getHeaderLine('Content-Type') === 'application/json'
     ? new JsonResponseHandler() : new PrettyPageHandler();
-$consoleHandler = class_exists(\NunoMaduro\Collision\Handler::class)
+$consoleHandler = class_exists(NunoMaduro\Collision\Handler::class)
     ? new NunoMaduro\Collision\Handler() : new PlainTextHandler();
 
 (new Run)
