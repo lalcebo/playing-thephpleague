@@ -16,6 +16,9 @@ use League\Event\PrioritizedListenerRegistry;
 use League\Route\RouteGroup;
 use League\Route\Router;
 use League\Route\Strategy\ApplicationStrategy;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+use Whoops\Exception\Inspector;
 use Whoops\Handler\JsonResponseHandler;
 use Whoops\Handler\PlainTextHandler;
 use Whoops\Handler\PrettyPageHandler;
@@ -25,6 +28,10 @@ include __DIR__ . '/../vendor/autoload.php';
 
 date_default_timezone_set('UTC');
 
+// logger
+$log = new Logger('local');
+$log->pushHandler(new StreamHandler('php://stdout'));
+
 // init
 $reflection = new ReflectionContainer();
 $config = new Configuration();
@@ -32,14 +39,13 @@ $event = new EventDispatcher(new PrioritizedListenerRegistry());
 $request = ServerRequestFactory::fromGlobals($_SERVER, $_GET, $_POST, $_COOKIE, $_FILES);
 
 // whoops
-$browserHandler = $request->getHeaderLine('Content-Type') === 'application/json'
-    ? new JsonResponseHandler() : new PrettyPageHandler();
-$consoleHandler = class_exists(NunoMaduro\Collision\Handler::class)
-    ? new NunoMaduro\Collision\Handler() : new PlainTextHandler();
+$browserHandler = $request->getHeaderLine('Content-Type') === 'application/json' ? new JsonResponseHandler() : new PrettyPageHandler();
+$consoleHandler = class_exists(NunoMaduro\Collision\Handler::class) ? new NunoMaduro\Collision\Handler() : new PlainTextHandler();
 
-(new Run)
-    ->pushHandler(PHP_SAPI === 'cli' ? $consoleHandler : $browserHandler)
-    ->register();
+$run = new Run();
+$run->pushHandler(PHP_SAPI === 'cli' ? $consoleHandler : $browserHandler);
+$run->pushHandler(fn (Throwable $e, Inspector $inspector, Run $run) => $log->error($e->getMessage(), $e->getTrace()));
+$run->register();
 
 // environment vars
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
