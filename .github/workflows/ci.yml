@@ -28,7 +28,7 @@ jobs:
           coverage: xdebug
       - run: composer validate
       - run: cp phpunit.xml.dist phpunit.xml
-      - run: phpstan.neon.dist phpstan.neon
+      - run: cp phpstan.neon.dist phpstan.neon
       - run: composer install --prefer-dist --no-interaction --no-progress
 
       - name: Rector
