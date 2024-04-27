@@ -38,9 +38,12 @@ final class EventServiceProvider extends AbstractServiceProvider implements Boot
         /** @var EventDispatcher $event */
         $event = $this->getContainer()->get(EventDispatcher::class);
 
-        foreach ($this->listen as $eventName => $listeners) {
-            foreach ($listeners as $listener) {
-                $event->subscribeTo($eventName, new $listener());
+        foreach ($this->listen as $eventName => $eventListeners) {
+            foreach ($eventListeners as $eventListener) {
+                /** @var callable $listener */
+                $listener = new $eventListener;
+
+                $event->subscribeTo($eventName, $listener);
             }
         }
     }
