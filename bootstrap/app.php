@@ -7,6 +7,10 @@ declare(strict_types=1);
 
 use App\Providers\AppServiceProvider;
 use App\Providers\EventServiceProvider;
+use Dotenv\Repository\Adapter\EnvConstAdapter;
+use Dotenv\Repository\Adapter\PutenvAdapter;
+use Dotenv\Repository\Adapter\ServerConstAdapter;
+use Dotenv\Repository\RepositoryBuilder;
 use Laminas\Diactoros\ServerRequestFactory;
 use League\Config\Configuration;
 use League\Container\Container;
@@ -30,9 +34,14 @@ include __DIR__ . '/../vendor/autoload.php';
 date_default_timezone_set('UTC');
 
 // environment vars
-foreach ((Dotenv\Dotenv::createImmutable(__DIR__ . '/../'))->load() as $env => $value) {
-    putenv("$env=$value");
-}
+$repository = RepositoryBuilder::createWithNoAdapters()
+    ->addAdapter(ServerConstAdapter::class)
+    ->addAdapter(EnvConstAdapter::class)
+    ->addWriter(PutenvAdapter::class)
+    ->immutable()
+    ->make();
+$dotenv = Dotenv\Dotenv::create($repository, __DIR__ . '/../');
+$dotenv->load();
 
 // logger
 $log = new Logger('local');
@@ -53,6 +62,9 @@ $run = new Run();
 $run->pushHandler(PHP_SAPI === 'cli' ? $consoleHandler : $browserHandler);
 $run->pushHandler(fn (Throwable $e, Inspector $inspector, Run $run) => $log->error($e->getMessage(), $e->getTrace()));
 $run->register();
+
+// validate env var values
+$dotenv->ifPresent('APP_DEBUG')->isBoolean();
 
 // container
 $container = new Container();
