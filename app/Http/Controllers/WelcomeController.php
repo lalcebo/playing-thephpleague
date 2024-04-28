@@ -6,7 +6,6 @@ namespace App\Http\Controllers;
 
 use App\Events\ExampleEvent;
 use Laminas\Diactoros\Response\JsonResponse;
-use League\Event\EventDispatcher;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
