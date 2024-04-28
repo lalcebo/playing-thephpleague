@@ -12,10 +12,6 @@ use Psr\Http\Message\ServerRequestInterface;
 
 final class WelcomeController
 {
-    public function __construct(protected EventDispatcher $eventDispatcher)
-    {
-    }
-
     public function __invoke(ServerRequestInterface $request): ResponseInterface
     {
         event(new ExampleEvent(['id' => 'exampleEventId']));
