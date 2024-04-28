@@ -17,6 +17,7 @@ use League\Route\RouteGroup;
 use League\Route\Router;
 use League\Route\Strategy\ApplicationStrategy;
 use Monolog\Handler\StreamHandler;
+use Monolog\Level;
 use Monolog\Logger;
 use Whoops\Exception\Inspector;
 use Whoops\Handler\JsonResponseHandler;
@@ -28,9 +29,15 @@ include __DIR__ . '/../vendor/autoload.php';
 
 date_default_timezone_set('UTC');
 
+// environment vars
+foreach ((Dotenv\Dotenv::createImmutable(__DIR__ . '/../'))->load() as $env => $value) {
+    putenv("$env=$value");
+}
+
 // logger
 $log = new Logger('local');
-$log->pushHandler(new StreamHandler('php://stdout'));
+$level = filter_var(env('APP_DEBUG', false), FILTER_VALIDATE_BOOLEAN) ? Level::Debug : Level::Error;
+$log->pushHandler(new StreamHandler('php://stdout', $level));
 
 // init
 $reflection = new ReflectionContainer();
@@ -46,13 +53,6 @@ $run = new Run();
 $run->pushHandler(PHP_SAPI === 'cli' ? $consoleHandler : $browserHandler);
 $run->pushHandler(fn (Throwable $e, Inspector $inspector, Run $run) => $log->error($e->getMessage(), $e->getTrace()));
 $run->register();
-
-// environment vars
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
-$environments = $dotenv->load();
-foreach ($environments as $key => $value) {
-    putenv("$key=$value");
-}
 
 // container
 $container = new Container();
