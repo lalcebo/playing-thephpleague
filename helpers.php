@@ -16,11 +16,13 @@ if (! function_exists('app')) {
      */
     function app(?string $abstract = null): mixed
     {
+        $app = Application::getInstance();
+
         if (is_null($abstract)) {
-            return Application::getContainer();
+            return $app->getContainer();
         }
 
-        return Application::getContainer()->get($abstract);
+        return $app->getContainer()->get($abstract);
     }
 }
 

@@ -24,6 +24,7 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Level;
 use Monolog\Logger;
 use Nette\Schema\Expect;
+use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
 use Whoops\Exception\Inspector;
@@ -34,36 +35,37 @@ use Whoops\Run;
 
 final class Application
 {
+    private static Application $instance;
+
     private static Container $container;
 
-    public function __construct(protected Container $object)
+    private function __construct(Container $container)
     {
-        self::$container = $object;
-        self::$container->add(ServerRequestInterface::class, ServerRequestFactory::fromGlobals($_SERVER, $_GET, $_POST, $_COOKIE, $_FILES));
+        $this->setContainer($container);
 
-        $this->environment();
-        $this->configuration();
-        $this->logger();
-        $this->whoops();
-        $this->events();
-        $this->route();
-
-        // sets the default timezone used
-        date_default_timezone_set(self::$container->get('config')->get('app.timezone'));
+        $this->getContainer()->add(ServerRequestFactoryInterface::class, new ServerRequestFactory());
+        $this->getContainer()->add(ServerRequestInterface::class, ServerRequestFactory::fromGlobals($_SERVER, $_GET, $_POST, $_COOKIE, $_FILES));
     }
 
-    public static function getContainer(): Container
+    public static function getInstance(): Application
     {
-        if (self::$container === null) {
-            self::$container = self::buildContainer();
+        if (! isset(self::$instance)) {
+            self::$instance = new self((new Container())->delegate(new ReflectionContainer()));
         }
 
-        return self::$container;
+        return self::$instance;
     }
 
-    public static function make(): Application
+    public function setContainer(Container $container): Application
     {
-        return new self(self::buildContainer());
+        self::$container = $container;
+
+        return $this;
+    }
+
+    public function getContainer(): Container
+    {
+        return self::$container;
     }
 
     public function register(string $provider): void
@@ -73,23 +75,17 @@ final class Application
 
     public function getRoute(): Router
     {
-        return self::getContainer()->get('router');
+        return self::$container->get('router');
     }
 
     public function run(): void
     {
         // send the response to the browser
         (new SapiEmitter())
-            ->emit($this->getRoute()->dispatch(self::getContainer()->get(ServerRequestInterface::class)));
+            ->emit(self::$container->get('router')->dispatch(self::$container->get(ServerRequestInterface::class)));
     }
 
-    private static function buildContainer(): Container
-    {
-        return (new Container())
-            ->delegate(new ReflectionContainer());
-    }
-
-    private function environment(): void
+    public function environment(): Application
     {
         $repository = RepositoryBuilder::createWithNoAdapters()
             ->addAdapter(ServerConstAdapter::class)
@@ -102,9 +98,11 @@ final class Application
 
         self::$container->add(AdapterRepository::class, fn () => $repository);
         self::$container->add('env', fn () => $repository);
+
+        return $this;
     }
 
-    private function configuration(): void
+    public function configuration(): Application
     {
         $config = new Configuration();
         $schema = Expect::array();
@@ -121,9 +119,11 @@ final class Application
 
         self::$container->add(Configuration::class, fn () => $config);
         self::$container->add('config', fn () => $config);
+
+        return $this;
     }
 
-    private function logger(): void
+    public function logger(): Application
     {
         $level = self::$container->get('config')->get('app.debug') ? Level::Debug : Level::Error;
 
@@ -132,30 +132,35 @@ final class Application
 
         self::$container->add(Logger::class, fn () => $logger);
         self::$container->add('logger', fn () => $logger);
+
+        return $this;
     }
 
-    private function events(): void
+    public function events(): Application
     {
         $event = new EventDispatcher(new PrioritizedListenerRegistry());
 
         self::$container->add(EventDispatcher::class, fn () => $event);
         self::$container->add('event', fn () => $event);
+
+        return $this;
     }
 
-    private function whoops(): void
+    public function whoops(): Application
     {
         $isJson = self::$container->get(ServerRequestInterface::class)->getHeaderLine('Content-Type') === 'application/json';
         $browserHandler = $isJson ? new JsonResponseHandler() : new PrettyPageHandler();
-        /** @noinspection PhpFullyQualifiedNameUsageInspection */
         $consoleHandler = class_exists(\NunoMaduro\Collision\Handler::class) ? new \NunoMaduro\Collision\Handler() : new PlainTextHandler();
 
         $run = new Run();
         $run->pushHandler(runningInConsole() ? $consoleHandler : $browserHandler);
         $run->pushHandler(fn (Throwable $e, Inspector $inspector, Run $run) => self::$container->get('logger')->error($e->getMessage(), $e->getTrace()));
         $run->register();
+
+        return $this;
     }
 
-    private function route(): void
+    public function route(): Application
     {
         /** @var ApplicationStrategy $strategy */
         $strategy = (new ApplicationStrategy())->setContainer(self::$container);
@@ -163,5 +168,7 @@ final class Application
 
         self::$container->add(Router::class, fn () => $router);
         self::$container->add('router', fn () => $router);
+
+        return $this;
     }
 }
