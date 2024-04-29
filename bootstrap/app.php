@@ -46,7 +46,8 @@ $repository = RepositoryBuilder::createWithNoAdapters()
     ->immutable()
     ->make();
 (Dotenv\Dotenv::create($repository, __DIR__ . '/../'))->load();
-$container->add(AdapterRepository::class, fn () => $repository)->setAlias('env');
+$container->add(AdapterRepository::class, fn () => $repository);
+$container->add('env', fn () => $repository);
 
 // config
 $config = new Configuration();
