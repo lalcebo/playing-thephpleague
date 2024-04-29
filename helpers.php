@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Lalcebo\League\Application;
 use League\Config\Configuration;
 use League\Container\Container;
 use League\Event\EventDispatcher;
@@ -15,14 +16,11 @@ if (! function_exists('app')) {
      */
     function app(?string $abstract = null): mixed
     {
-        /** @var Container $container */
-        global $container;
-
         if (is_null($abstract)) {
-            return $container;
+            return Application::getContainer();
         }
 
-        return $container->get($abstract);
+        return Application::getContainer()->get($abstract);
     }
 }
 
