@@ -75,8 +75,8 @@ final class Application
     {
         $provider = new $provider();
 
-        if (!$provider instanceof ServiceProviderInterface) {
-            throw new TypeError($provider::class.' must implement ServiceProviderInterface');
+        if (! $provider instanceof ServiceProviderInterface) {
+            throw new TypeError($provider::class . ' must implement ServiceProviderInterface');
         }
 
         self::$container->addServiceProvider($provider);
