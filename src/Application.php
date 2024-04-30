@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lalcebo\League;
+namespace App;
 
 use DirectoryIterator;
 use Dotenv\Dotenv;
@@ -94,7 +94,7 @@ final class Application
             ->immutable()
             ->make();
 
-        Dotenv::create($repository, __DIR__ . '/../')->load();
+        Dotenv::create($repository, __DIR__ . '/playing-thephpleague/')->load();
 
         self::$container->add(AdapterRepository::class, fn () => $repository);
         self::$container->add('env', fn () => $repository);

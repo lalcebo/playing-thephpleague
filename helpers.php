@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Lalcebo\League\Application;
+use App\Application;
 use League\Config\Configuration;
 use League\Container\Container;
 use League\Event\EventDispatcher;

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Application;
 use App\Providers\AppServiceProvider;
 use App\Providers\EventServiceProvider;
 use App\Providers\RouteServiceProvider;
-use Lalcebo\League\Application;
 
 include __DIR__ . '/../vendor/autoload.php';
 
