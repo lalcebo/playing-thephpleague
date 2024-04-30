@@ -16,6 +16,7 @@ use Laminas\HttpHandlerRunner\Emitter\SapiEmitter;
 use League\Config\Configuration;
 use League\Container\Container;
 use League\Container\ReflectionContainer;
+use League\Container\ServiceProvider\ServiceProviderInterface;
 use League\Event\EventDispatcher;
 use League\Event\PrioritizedListenerRegistry;
 use League\Route\Router;
@@ -28,6 +29,7 @@ use Nette\Schema\Expect;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
+use TypeError;
 use Whoops\Exception\Inspector;
 use Whoops\Handler\JsonResponseHandler;
 use Whoops\Handler\PlainTextHandler;
@@ -71,19 +73,31 @@ final class Application
 
     public function register(string $provider): void
     {
-        self::$container->addServiceProvider(new $provider());
+        $provider = new $provider();
+
+        if (!$provider instanceof ServiceProviderInterface) {
+            throw new TypeError($provider::class.' must implement ServiceProviderInterface');
+        }
+
+        self::$container->addServiceProvider($provider);
     }
 
-    public function getRoute(): Router
+    public function getRouter(): Router
     {
-        return self::$container->get('router');
+        /** @var Router $router */
+        $router = self::$container->get('router');
+
+        return $router;
     }
 
     public function run(): void
     {
+        /** @var ServerRequestInterface $request */
+        $request = self::$container->get(ServerRequestInterface::class);
+
         // send the response to the browser
         (new SapiEmitter())
-            ->emit(self::$container->get('router')->dispatch(self::$container->get(ServerRequestInterface::class)));
+            ->emit($this->getRouter()->dispatch($request));
     }
 
     public function environment(): Application
@@ -126,7 +140,10 @@ final class Application
 
     public function logger(): Application
     {
-        $level = self::$container->get('config')->get('app.debug') ? Level::Debug : Level::Error;
+        /** @var Configuration $config */
+        $config = self::$container->get('config');
+
+        $level = $config->get('app.debug') ? Level::Debug : Level::Error;
 
         $logger = new Logger('local');
         $logger->pushHandler(new StreamHandler('php://stdout', $level));
@@ -149,13 +166,17 @@ final class Application
 
     public function whoops(): Application
     {
-        $isJson = self::$container->get(ServerRequestInterface::class)->getHeaderLine('Content-Type') === 'application/json';
+        /** @var ServerRequestInterface $request */
+        $request = self::$container->get(ServerRequestInterface::class);
+        $isJson = $request->getHeaderLine('Content-Type') === 'application/json';
+        /** @var Logger $logger */
+        $logger = self::$container->get('logger');
         $browserHandler = $isJson ? new JsonResponseHandler() : new PrettyPageHandler();
         $consoleHandler = class_exists(\NunoMaduro\Collision\Handler::class) ? new \NunoMaduro\Collision\Handler() : new PlainTextHandler();
 
         $run = new Run();
         $run->pushHandler(runningInConsole() ? $consoleHandler : $browserHandler);
-        $run->pushHandler(fn (Throwable $e, Inspector $inspector, Run $run) => self::$container->get('logger')->error($e->getMessage(), $e->getTrace()));
+        $run->pushHandler(fn (Throwable $e, Inspector $inspector, Run $run) => $logger->error($e->getMessage(), $e->getTrace()));
         $run->register();
 
         return $this;
