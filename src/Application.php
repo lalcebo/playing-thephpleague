@@ -109,7 +109,7 @@ final class Application
             ->immutable()
             ->make();
 
-        Dotenv::create($repository, __DIR__ . '/playing-thephpleague/')->load();
+        Dotenv::create($repository, __DIR__ . '/../')->load();
 
         self::$container->add(AdapterRepository::class, fn () => $repository);
         self::$container->add('env', fn () => $repository);
