@@ -27,6 +27,7 @@ jobs:
           tools: composer:v2
           coverage: xdebug
       - run: composer validate
+      - run: cp .env.example .env
       - run: cp phpunit.xml.dist phpunit.xml
       - run: cp phpstan.neon.dist phpstan.neon
       - run: composer install --prefer-dist --no-interaction --no-progress
