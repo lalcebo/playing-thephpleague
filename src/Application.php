@@ -20,6 +20,7 @@ use League\Event\EventDispatcher;
 use League\Event\PrioritizedListenerRegistry;
 use League\Route\Router;
 use League\Route\Strategy\ApplicationStrategy;
+use League\Route\Strategy\StrategyAwareInterface;
 use Monolog\Handler\StreamHandler;
 use Monolog\Level;
 use Monolog\Logger;
@@ -117,8 +118,8 @@ final class Application
             }
         }
 
-        self::$container->add(Configuration::class, fn () => $config);
-        self::$container->add('config', fn () => $config);
+        self::$container->add(Configuration::class, fn (): \League\Config\Configuration => $config);
+        self::$container->add('config', fn (): \League\Config\Configuration => $config);
 
         return $this;
     }
@@ -130,8 +131,8 @@ final class Application
         $logger = new Logger('local');
         $logger->pushHandler(new StreamHandler('php://stdout', $level));
 
-        self::$container->add(Logger::class, fn () => $logger);
-        self::$container->add('logger', fn () => $logger);
+        self::$container->add(Logger::class, fn (): \Monolog\Logger => $logger);
+        self::$container->add('logger', fn (): \Monolog\Logger => $logger);
 
         return $this;
     }
@@ -140,8 +141,8 @@ final class Application
     {
         $event = new EventDispatcher(new PrioritizedListenerRegistry());
 
-        self::$container->add(EventDispatcher::class, fn () => $event);
-        self::$container->add('event', fn () => $event);
+        self::$container->add(EventDispatcher::class, fn (): \League\Event\EventDispatcher => $event);
+        self::$container->add('event', fn (): \League\Event\EventDispatcher => $event);
 
         return $this;
     }
@@ -166,8 +167,8 @@ final class Application
         $strategy = (new ApplicationStrategy())->setContainer(self::$container);
         $router = (new Router())->setStrategy($strategy);
 
-        self::$container->add(Router::class, fn () => $router);
-        self::$container->add('router', fn () => $router);
+        self::$container->add(Router::class, fn (): StrategyAwareInterface => $router);
+        self::$container->add('router', fn (): StrategyAwareInterface => $router);
 
         return $this;
     }
