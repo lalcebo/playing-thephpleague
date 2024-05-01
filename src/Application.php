@@ -26,7 +26,7 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Level;
 use Monolog\Logger;
 use Nette\Schema\Expect;
-use Psr\Http\Message\ServerRequestFactoryInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
 use TypeError;
@@ -45,9 +45,6 @@ final class Application
     private function __construct(Container $container)
     {
         $this->setContainer($container);
-
-        $this->getContainer()->add(ServerRequestFactoryInterface::class, new ServerRequestFactory());
-        $this->getContainer()->add(ServerRequestInterface::class, ServerRequestFactory::fromGlobals($_SERVER, $_GET, $_POST, $_COOKIE, $_FILES));
     }
 
     public static function getInstance(): Application
@@ -92,12 +89,28 @@ final class Application
 
     public function run(): void
     {
-        /** @var ServerRequestInterface $request */
-        $request = self::$container->get(ServerRequestInterface::class);
-
         // send the response to the browser
-        (new SapiEmitter())
-            ->emit($this->getRouter()->dispatch($request));
+        (new SapiEmitter())->emit($this->handle());
+    }
+
+    public function handle(?ServerRequestInterface $request = null): ResponseInterface
+    {
+        if ($request === null) {
+            /** @var ServerRequestInterface $request */
+            $request = self::$container->get(ServerRequestInterface::class);
+        }
+
+        return $this->getRouter()->dispatch($request);
+    }
+
+    public function request(): Application
+    {
+        $request = ServerRequestFactory::fromGlobals($_SERVER, $_GET, $_POST, $_COOKIE, $_FILES);
+
+        self::$container->add(ServerRequestInterface::class, $request);
+        self::$container->add('request', $request);
+
+        return $this;
     }
 
     public function environment(): Application

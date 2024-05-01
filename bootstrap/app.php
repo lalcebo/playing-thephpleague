@@ -10,6 +10,7 @@ use App\Providers\RouteServiceProvider;
 include __DIR__ . '/../vendor/autoload.php';
 
 $app = Application::getInstance()
+    ->request()
     ->environment()
     ->configuration()
     ->logger()
