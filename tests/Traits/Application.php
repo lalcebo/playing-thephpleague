@@ -45,6 +45,31 @@ trait Application
     }
 
     /**
+     * Read array value with dot notation.
+     */
+    protected function getArrayValue(array $data, string $path, $default = null)
+    {
+        $currentValue = $data;
+        $keyPaths = explode('.', $path);
+
+        foreach ($keyPaths as $currentKey) {
+            if (isset($currentValue->$currentKey)) {
+                $currentValue = $currentValue->$currentKey;
+                continue;
+            }
+
+            if (isset($currentValue[$currentKey])) {
+                $currentValue = $currentValue[$currentKey];
+                continue;
+            }
+
+            return $default;
+        }
+
+        return $currentValue ?? $default;
+    }
+
+    /**
      * Define an object or a value in the container.
      */
     protected function setContainerValue(string $name, mixed $value): void

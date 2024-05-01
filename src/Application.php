@@ -95,7 +95,7 @@ final class Application
 
     public function handle(?ServerRequestInterface $request = null): ResponseInterface
     {
-        if ($request === null) {
+        if (!$request instanceof ServerRequestInterface) {
             /** @var ServerRequestInterface $request */
             $request = self::$container->get(ServerRequestInterface::class);
         }
