@@ -55,11 +55,13 @@ trait Application
         foreach ($keyPaths as $currentKey) {
             if (isset($currentValue->$currentKey)) {
                 $currentValue = $currentValue->$currentKey;
+
                 continue;
             }
 
             if (isset($currentValue[$currentKey])) {
                 $currentValue = $currentValue[$currentKey];
+
                 continue;
             }
 
